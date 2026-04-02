@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guardian Agent — Secure AI Transaction Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #060810;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px 16px;
+      font-family: 'Courier New', Courier, monospace;
+      color: #c8d0e0;
+    }
+
+    .root {
+      background: #0a0d12;
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 860px;
+      border: 1px solid #1e2538;
+    }
+
+    .header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 22px; padding-bottom: 16px;
+      border-bottom: 1px solid #1e2538;
+    }
+    .logo {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, #10b981, #3B5BDB);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .header-text h1 { font-size: 18px; font-weight: 700; color: #e8edf8; font-family: Arial, sans-serif; }
+    .header-text p  { font-size: 11px; color: #5a6480; margin-top: 3px; }
+    .status-dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: #22c55e; margin-left: auto; flex-shrink: 0;
+      box-shadow: 0 0 8px #22c55e88;
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.45} }
+
+    .pipeline {
+      display: flex; align-items: center; gap: 0;
+      margin-bottom: 20px;
+      background: #0e1320; border: 1px solid #1e2538;
+      border-radius: 10px; padding: 14px 10px; overflow-x: auto;
+    }
+    .pipe-step {
+      display: flex; flex-direction: column; align-items: center;
+      flex: 1; min-width: 72px; gap: 6px;
+    }
+    .pipe-icon {
+      width: 42px; height: 42px; border-radius: 9px;
+      background: #141926; border: 1.5px solid #2a3048;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; transition: all 0.35s;
+    }
+    .pipe-step.active .pipe-icon { border-color: #10b981; background: #0d2018; box-shadow: 0 0 12px #10b98155; }
+    .pipe-step.done .pipe-icon   { border-color: #22c55e; background: #0e1f14; }
+    .pipe-step.rejected .pipe-icon { border-color: #ef4444; background: #1f0e0e; }
+    .pipe-label { font-size: 9px; color: #4a5470; text-align: center; letter-spacing: 0.05em; text-transform: uppercase; transition: color 0.3s; }
+    .pipe-step.active .pipe-label { color: #10b981; }
+    .pipe-step.done .pipe-label   { color: #22c55e; }
+    .pipe-step.rejected .pipe-label { color: #ef4444; }
+    .pipe-arrow { color: #2a3048; font-size: 14px; flex-shrink: 0; margin: 0 2px; transition: color 0.3s; }
+    .pipe-arrow.lit      { color: #10b981; }
+    .pipe-arrow.done     { color: #22c55e; }
+    .pipe-arrow.rejected { color: #ef4444; }
+
+    .status-banner {
+      padding: 11px 16px; border-radius: 9px; font-size: 12px;
+      margin-bottom: 16px; display: none; align-items: center; gap: 8px;
+    }
+    .status-banner.show { display: flex; }
+    .status-banner.pass { background: #0e1f14; border: 1px solid #22c55e44; color: #22c55e; }
+    .status-banner.fail { background: #1f0e0e; border: 1px solid #ef444444; color: #ef4444; }
+    .status-banner.info { background: #0d2018; border: 1px solid #10b98144; color: #10b981; }
+
+    .sign-steps { margin-bottom: 16px; display: none; }
+    .sign-steps.show { display: block; }
+    .sign-step {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 14px; border-radius: 7px; margin-bottom: 5px;
+      font-size: 11px; background: #0e1320; border: 1px solid #1e2538;
+      color: #4a5470; transition: all 0.3s;
+    }
+    .sign-step.active { color: #e8edf8; border-color: #10b98144; background: #0d2018; }
+    .sign-step.done   { color: #22c55e; border-color: #22c55e33; background: #0e1f14; }
+    .sign-step.warn   { color: #f59e0b; border-color: #f59e0b33; background: #1a1408; }
+    .sign-dot { width: 8px; height: 8px; border-radius: 50%; background: #2a3048; flex-shrink: 0; transition: background 0.3s; }
+    .sign-step.active .sign-dot { background: #10b981; animation: pulse-dot 1s infinite; }
+    .sign-step.done .sign-dot   { background: #22c55e; }
+    .sign-step.warn .sign-dot   { background: #f59e0b; }
+
+    .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    @media (max-width: 600px) { .main-grid { grid-template-columns: 1fr; } }
+
+    .panel { background: #0e1320; border: 1px solid #1e2538; border-radius: 10px; overflow: hidden; }
+    .panel-header {
+      padding: 10px 16px; border-bottom: 1px solid #1e2538;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 10px; font-weight: 600; color: #6878a0;
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .panel-body { padding: 16px; }
+
+    .tx-field { margin-bottom: 11px; }
+    .tx-label { font-size: 10px; color: #5a6480; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.06em; display: block; }
+    .tx-input {
+      width: 100%; background: #141926; border: 1px solid #2a3048;
+      border-radius: 7px; color: #c8d0e0; padding: 8px 11px;
+      font-family: 'Courier New', monospace; font-size: 13px; outline: none;
+      transition: border-color 0.2s; appearance: none;
+    }
+    .tx-input:focus { border-color: #10b981; }
+    select.tx-input option { background: #141926; }
+
+    .policy-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 11px; }
+    .policy-key { color: #6878a0; }
+    .policy-val {
+      background: #141926; border: 1px solid #2a3048; border-radius: 6px;
+      color: #c8d0e0; padding: 5px 9px; font-family: 'Courier New', monospace;
+      font-size: 12px; outline: none; width: 100px; text-align: right;
+    }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #6878a0; }
+    .toggle { width: 34px; height: 19px; background: #2a3048; border-radius: 10px; cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; }
+    .toggle.on { background: #10b981; }
+    .toggle::after { content:''; position: absolute; width: 13px; height: 13px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s; }
+    .toggle.on::after { transform: translateX(15px); }
+
+    .vault-box { background: #0a0d12; border: 1px solid #2a3048; border-radius: 8px; padding: 11px 13px; margin-bottom: 10px; font-size: 11px; }
+    .vault-path { color: #10b981; margin-bottom: 7px; font-size: 12px; }
+    .vault-row { display: flex; justify-content: space-between; color: #5a6480; margin-bottom: 4px; }
+    .vault-val { color: #c8d0e0; }
+    .vault-key-visual { background: #141926; border: 1px dashed #2a3048; border-radius: 7px; padding: 10px; text-align: center; font-size: 10px; color: #3a4460; line-height: 1.7; }
+    .vault-status { margin-top: 11px; display: flex; align-items: center; gap: 8px; font-size: 11px; }
+    .guardian-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #0d2018; border: 1px solid #10b98144;
+      border-radius: 20px; padding: 5px 12px;
+      font-size: 10px; color: #10b981; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 10px;
+    }
+
+    .run-btn {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #10b981, #3B5BDB);
+      border: none; border-radius: 9px; color: #fff;
+      font-family: 'Courier New', monospace; font-size: 14px; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.05em;
+      transition: opacity 0.2s, transform 0.1s; margin-top: 4px;
+    }
+    .run-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+    .run-btn:active:not(:disabled) { transform: translateY(0); }
+    .run-btn:disabled { opacity: 0.38; cursor: not-allowed; transform: none; }
+
+    .logs-panel { background: #0e1320; border: 1px solid #1e2538; border-radius: 10px; overflow: hidden; }
+    .log-body { padding: 13px 16px; font-size: 11px; font-family: 'Courier New', monospace; max-height: 200px; overflow-y: auto; line-height: 1.8; }
+    .log-line { display: flex; gap: 10px; }
+    .log-ts  { color: #3a4460; flex-shrink: 0; }
+    .log-msg { color: #7888a8; }
+    .log-msg.highlight { color: #c8d0e0; }
+    .log-msg.green  { color: #22c55e; }
+    .log-msg.red    { color: #ef4444; }
+    .log-msg.amber  { color: #f59e0b; }
+    .log-msg.blue   { color: #10b981; }
+    .log-cursor { animation: blink 1s step-end infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .vault-guarantee { margin-top: 12px; background: #0a0d12; border: 1px solid #1e2538; border-radius: 8px; padding: 10px 13px; font-size: 10px; color: #3a4460; line-height: 1.7; }
+    .vault-guarantee-title { color: #5a6480; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.06em; font-size: 9px; }
+  </style>
+</head>
+<body>
+<div class="root">
+
+  <div class="header">
+    <div class="logo">🛡️</div>
+    <div class="header-text">
+      <h1>Guardian Agent</h1>
+      <p>AI-powered transactions — zero private key exposure</p>
+    </div>
+    <div class="status-dot"></div>
+  </div>
+
+  <div class="pipeline">
+    <div class="pipe-step" id="ps-agent"><div class="pipe-icon">🤖</div><div class="pipe-label">Guardian Agent</div></div>
+    <div class="pipe-arrow" id="pa-1">▶</div>
+    <div class="pipe-step" id="ps-ows"><div class="pipe-icon">⚙️</div><div class="pipe-label">Interface</div></div>
+    <div class="pipe-arrow" id="pa-2">▶</div>
+    <div class="pipe-step" id="ps-policy"><div class="pipe-icon">🛡️</div><div class="pipe-label">Policy Eng.</div></div>
+    <div class="pipe-arrow" id="pa-3">▶</div>
+    <div class="pipe-step" id="ps-signer"><div class="pipe-icon">✍️</div><div class="pipe-label">Signer</div></div>
+    <div class="pipe-arrow" id="pa-4">▶</div>
+    <div class="pipe-step" id="ps-vault"><div class="pipe-icon">🔒</div><div class="pipe-label">Wallet Vault</div></div>
+  </div>
+
+  <div class="status-banner" id="status-banner"></div>
+
+  <div class="sign-steps" id="sign-steps">
+    <div class="sign-step" id="ss-1"><div class="sign-dot"></div><span>Decrypting key from vault (AES-256-GCM)...</span></div>
+    <div class="sign-step" id="ss-2"><div class="sign-dot"></div><span>Signing transaction with secp256k1...</span></div>
+    <div class="sign-step" id="ss-3"><div class="sign-dot"></div><span>Zeroizing key from memory... key = 0x0000000000000000</span></div>
+    <div class="sign-step" id="ss-4"><div class="sign-dot"></div><span>Broadcasting signed transaction to network...</span></div>
+  </div>
+
+  <div class="main-grid">
+    <div>
+      <div class="panel" style="margin-bottom:16px">
+        <div class="panel-header">💸 Transaction Request</div>
+        <div class="panel-body">
+          <div class="tx-field">
+            <label class="tx-label">Token</label>
+            <select class="tx-input" id="tx-token">
+              <option value="ETH">ETH</option>
+              <option value="USDC">USDC</option>
+              <option value="BTC">BTC</option>
+            </select>
+          </div>
+          <div class="tx-field">
+            <label class="tx-label">Amount (USD)</label>
+            <input class="tx-input" type="number" id="tx-amount" value="150" min="1" max="99999" />
+          </div>
+          <div class="tx-field">
+            <label class="tx-label">Recipient</label>
+            <input class="tx-input" type="text" id="tx-to" value="0xDEAD...BEEF" />
+          </div>
+          <button class="run-btn" id="run-btn" onclick="runAgent()">▶ Run Guardian Agent</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">🛡️ Policy Engine Config</div>
+        <div class="panel-body">
+          <div class="policy-row">
+            <span class="policy-key">Max spend (USD)</span>
+            <input class="policy-val" type="number" id="policy-max" value="200" />
+          </div>
+          <div class="policy-row">
+            <span class="policy-key">Allowed token</span>
+            <input class="policy-val" type="text" id="policy-token" value="ETH" readonly style="cursor:default;color:#10b981;border-color:#10b98144" />
+          </div>
+          <div class="toggle-row">
+            <span>Simulation required</span>
+            <div class="toggle on" id="sim-toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div><div class="guardian-badge">⚡ Guardian enforced</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel" style="height:100%">
+        <div class="panel-header">🔒 Wallet Vault</div>
+        <div class="panel-body">
+          <div class="vault-box">
+            <div class="vault-path">~/.guardian/wallets/default.vault</div>
+            <div class="vault-row"><span>Encryption</span><span class="vault-val">AES-256-GCM</span></div>
+            <div class="vault-row"><span>KDF</span><span class="vault-val">Argon2id</span></div>
+            <div class="vault-row"><span>Curve</span><span class="vault-val">secp256k1</span></div>
+            <div class="vault-row"><span>Agent access</span><span style="color:#ef4444;font-weight:700">DENIED</span></div>
+          </div>
+          <div class="vault-key-visual" id="vault-visual">
+            ████████████████████████<br/>
+            ████ ENCRYPTED KEY ██████<br/>
+            ████████████████████████<br/>
+            <span style="font-size:9px;color:#2a3448;letter-spacing:0.05em">← agent cannot read this →</span>
+          </div>
+          <div class="vault-status" id="vault-status">
+            <span style="font-size:16px">🔒</span>
+            <span style="color:#22c55e">Vault locked — key never exposed</span>
+          </div>
+          <div class="vault-guarantee">
+            <div class="vault-guarantee-title">Guardian Guarantee</div>
+            Private key decrypted only during sign() → immediately wiped.<br/>
+            Agent receives tx hash only. Key never leaves vault scope.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="logs-panel">
+    <div class="panel-header">
+      📋 Guardian Event Log
+      <span style="margin-left:auto;font-size:9px;color:#3a4460;letter-spacing:0.05em">LIVE STREAM</span>
+    </div>
+    <div class="log-body" id="log-body">
+      <div class="log-line"><span class="log-ts">[boot]</span><span class="log-msg">Guardian Agent initialized. Vault mounted. Policy engine online.</span></div>
+      <div class="log-line"><span class="log-ts">[sys]</span><span class="log-msg">Waiting for agent request... <span class="log-cursor">█</span></span></div>
+    </div>
+  </div>
+
+</div>
+<script>
+  var running = false;
+  function ts() { var n=new Date(); return '['+pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds())+']'; }
+  function pad(x) { return String(x).padStart(2,'0'); }
+  function addLog(msg,cls,delay) {
+    return new Promise(function(res){ setTimeout(function(){
+      var lb=document.getElementById('log-body');
+      var div=document.createElement('div'); div.className='log-line';
+      div.innerHTML='<span class="log-ts">'+ts()+'</span><span class="log-msg '+(cls||'')+'">'+msg+'</span>';
+      lb.appendChild(div); lb.scrollTop=lb.scrollHeight; res();
+    }, delay||0); });
+  }
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
+  function setPipeStep(id,state){ var el=document.getElementById('ps-'+id); if(el) el.className='pipe-step '+state; }
+  function setPipeArrow(id,state){ var el=document.getElementById('pa-'+id); if(el) el.className='pipe-arrow '+state; }
+  function resetPipeline(){ ['agent','ows','policy','signer','vault'].forEach(function(s){ setPipeStep(s,''); }); [1,2,3,4].forEach(function(i){ setPipeArrow(i,''); }); }
+  function setSignStep(id,state){ var el=document.getElementById('ss-'+id); if(el) el.className='sign-step '+state; }
+  function showBanner(msg,type){ var b=document.getElementById('status-banner'); b.className='status-banner show '+type; b.innerHTML=msg; }
+  function hideBanner(){ document.getElementById('status-banner').className='status-banner'; }
+  function resetSignSteps(){ [1,2,3,4].forEach(function(i){ setSignStep(i,''); }); document.getElementById('sign-steps').className='sign-steps'; }
+  function setVaultVisual(state){
+    var v=document.getElementById('vault-visual'), s=document.getElementById('vault-status');
+    if(state==='decrypting'){
+      v.innerHTML='<span style="color:#f59e0b">▓</span>▓▓▓<span style="color:#f59e0b">▓</span>▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓<br/>██ DECRYPTING... ████████<br/>▓▓▓▓▓<span style="color:#f59e0b">▓</span>▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓<br/><span style="font-size:9px;color:#f59e0b;letter-spacing:0.05em">← key briefly in memory →</span>';
+      s.innerHTML='<span style="font-size:16px">🔓</span> <span style="color:#f59e0b">Decrypting — signing only</span>';
+    } else if(state==='wiped'){
+      v.innerHTML='0x00000000000000000000000000<br/>0x00000000000000000000000000<br/>0x00000000000000000000000000<br/><span style="font-size:9px;color:#22c55e;letter-spacing:0.05em">← key wiped from memory ✓ →</span>';
+      s.innerHTML='<span style="font-size:16px">🔒</span> <span style="color:#22c55e">Key zeroized — vault locked</span>';
+    } else {
+      v.innerHTML='████████████████████████<br/>████ ENCRYPTED KEY ██████<br/>████████████████████████<br/><span style="font-size:9px;color:#2a3448;letter-spacing:0.05em">← agent cannot read this →</span>';
+      s.innerHTML='<span style="font-size:16px">🔒</span> <span style="color:#22c55e">Vault locked — key never exposed</span>';
+    }
+  }
+  function randHex(bytes){ var o='0x'; for(var i=0;i<bytes;i++) o+=Math.floor(Math.random()*256).toString(16).padStart(2,'0'); return o; }
+
+  async function runAgent(){
+    if(running) return;
+    running=true;
+    document.getElementById('run-btn').disabled=true;
+    var token=document.getElementById('tx-token').value;
+    var amount=parseFloat(document.getElementById('tx-amount').value)||0;
+    var to=document.getElementById('tx-to').value||'0x???';
+    var maxSpend=parseFloat(document.getElementById('policy-max').value)||200;
+    var allowedT=(document.getElementById('policy-token').value||'ETH').toUpperCase().trim();
+    var simReq=document.getElementById('sim-toggle').classList.contains('on');
+    resetPipeline(); resetSignSteps(); hideBanner(); setVaultVisual('locked');
+
+    setPipeStep('agent','active');
+    showBanner('🤖 Guardian Agent requesting sign operation...','info');
+    await addLog('Guardian Agent → Interface: sign_request { token: '+token+', amount: $'+amount.toFixed(2)+', to: '+to+' }','highlight');
+    await sleep(800);
+
+    setPipeStep('agent','done'); setPipeArrow(1,'lit'); setPipeStep('ows','active');
+    await addLog('Interface received request. Validating schema...','blue');
+    await sleep(600);
+    await addLog('Schema valid. Forwarding to policy engine.','blue');
+    await sleep(400);
+
+    setPipeStep('ows','done'); setPipeArrow(2,'lit'); setPipeStep('policy','active');
+    showBanner('🛡️ Evaluating policies...','info');
+    await addLog('PolicyEngine → checking max_spend: $'+amount.toFixed(2)+' vs limit $'+maxSpend.toFixed(2),'');
+    await sleep(700);
+
+    var rejected=false, rejectReason='';
+    if(amount>maxSpend){ rejected=true; rejectReason='Amount $'+amount.toFixed(2)+' exceeds limit $'+maxSpend.toFixed(2); }
+    else if(token.toUpperCase()!==allowedT){ rejected=true; rejectReason='Token '+token+' not in allowed list ['+allowedT+']'; }
+
+    if(rejected){
+      await addLog('PolicyEngine → REJECTED: '+rejectReason,'red');
+      setPipeStep('policy','rejected'); setPipeArrow(2,'rejected');
+      showBanner('❌ Rejected: '+rejectReason,'fail');
+      await addLog('Transaction blocked. Key never accessed. Vault remains locked.','amber');
+      await addLog('Guardian Agent received: { status: "rejected", reason: "'+rejectReason+'" }','');
+      document.getElementById('run-btn').disabled=false; running=false; return;
+    }
+
+    await addLog('PolicyEngine → max_spend: PASS ✓','green'); await sleep(300);
+    await addLog('PolicyEngine → token_allowlist: PASS ✓ ('+token+' allowed)','green'); await sleep(300);
+    if(simReq){ await addLog('PolicyEngine → simulation_required: running simulation...',''); await sleep(700); await addLog('PolicyEngine → simulation: PASS ✓ (no revert, gas estimated)','green'); }
+
+    setPipeStep('policy','done'); setPipeArrow(3,'done');
+    showBanner('✅ Policy evaluation passed — all checks cleared','pass');
+    await sleep(500);
+
+    setPipeStep('signer','active');
+    document.getElementById('sign-steps').className='sign-steps show';
+    await addLog('Signer → requesting key from vault for sign-only operation...','blue');
+    await sleep(400);
+
+    setPipeStep('vault','active'); setVaultVisual('decrypting'); setSignStep(1,'active');
+    await sleep(950); setSignStep(1,'done');
+    await addLog('Vault → key decrypted into isolated memory region (no agent access)','amber');
+    await sleep(200);
+
+    setSignStep(2,'active');
+    await addLog('Signer → signing tx with secp256k1...','blue');
+    await sleep(950); setSignStep(2,'done');
+    await addLog('Signer → signature: '+randHex(16)+'...','green');
+    await sleep(200);
+
+    setSignStep(3,'active'); await sleep(750);
+    setSignStep(3,'warn'); setVaultVisual('wiped');
+    await addLog('Vault → KEY ZEROIZED from memory. Vault re-locked.','amber');
+    setPipeStep('vault','done'); await sleep(300);
+
+    setSignStep(4,'active'); await sleep(650);
+    setSignStep(4,'done'); setPipeStep('signer','done'); setPipeArrow(4,'done');
+    var txHash=randHex(32);
+    await addLog('Network → tx broadcast: '+txHash,'green'); await sleep(300);
+    await addLog('Guardian Agent received: { status: "confirmed", txHash: "'+txHash.slice(0,20)+'..." }','highlight');
+    await addLog('Private key was NEVER accessible to agent. Guardian enforced. ✓','green');
+    showBanner('✅ Transaction complete — private key never left the vault','pass');
+    document.getElementById('run-btn').disabled=false; running=false;
+  }
+</script>
+</body>
+</html>
