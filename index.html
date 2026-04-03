@@ -1,211 +1,328 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Guardian Agent — Secure AI Transaction Demo</title>
+  <title>Guardian Agent</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #030508;
+      --surface: #0b0e17;
+      --surface2: #111520;
+      --border: #1c2235;
+      --border2: #252d42;
+      --green: #00e5a0;
+      --green-dim: #00e5a015;
+      --green-mid: #00e5a055;
+      --red: #ff4560;
+      --red-dim: #ff456018;
+      --red-mid: #ff456055;
+      --amber: #ffb340;
+      --amber-dim: #ffb34018;
+      --blue: #4d9fff;
+      --blue-dim: #4d9fff18;
+      --text: #e2e8f8;
+      --text2: #8892aa;
+      --text3: #3d4860;
+      --mono: 'Space Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--mono); min-height: 100vh; overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px; opacity: 0.2; pointer-events: none; z-index: 0;
+    }
+    .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px; }
 
-    body {
-      background: #060810;
-      min-height: 100vh;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 32px 16px;
-      font-family: 'Courier New', Courier, monospace;
-      color: #c8d0e0;
-    }
+    /* Header */
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 42px; height: 42px; background: var(--green); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .logo-text { font-family: var(--sans); font-size: 22px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+    .logo-text span { color: var(--green); }
+    .header-badges { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .badge { display: flex; align-items: center; gap: 6px; background: var(--green-dim); border: 1px solid var(--green-mid); border-radius: 20px; padding: 5px 12px; font-size: 10px; color: var(--green); letter-spacing: 0.1em; text-transform: uppercase; }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-    .root {
-      background: #0a0d12;
-      border-radius: 16px;
-      padding: 24px;
-      width: 100%;
-      max-width: 860px;
-      border: 1px solid #1e2538;
+    /* Trust Score */
+    .trust-bar {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px 20px; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
     }
+    .trust-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.1em; flex-shrink: 0; }
+    .trust-track { flex: 1; min-width: 200px; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; border: 1px solid var(--border2); }
+    .trust-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4,0,0.2,1), background 0.5s; }
+    .trust-score { font-size: 24px; font-weight: 700; font-family: var(--sans); flex-shrink: 0; min-width: 60px; text-align: right; transition: color 0.5s; }
+    .trust-status { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; flex-shrink: 0; }
+    .trust-stats { display: flex; gap: 16px; margin-left: auto; }
+    .trust-stat { text-align: center; }
+    .trust-stat-val { font-size: 16px; font-weight: 700; }
+    .trust-stat-key { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
 
-    .header {
-      display: flex; align-items: center; gap: 14px;
-      margin-bottom: 22px; padding-bottom: 16px;
-      border-bottom: 1px solid #1e2538;
+    /* Kill Switch */
+    .kill-section {
+      background: #0d0508; border: 1px solid var(--red-mid);
+      border-radius: 14px; padding: 16px 20px; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
     }
-    .logo {
-      width: 44px; height: 44px;
-      background: linear-gradient(135deg, #10b981, #3B5BDB);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px; flex-shrink: 0;
-    }
-    .header-text h1 { font-size: 18px; font-weight: 700; color: #e8edf8; font-family: Arial, sans-serif; }
-    .header-text p  { font-size: 11px; color: #5a6480; margin-top: 3px; }
-    .status-dot {
-      width: 9px; height: 9px; border-radius: 50%;
-      background: #22c55e; margin-left: auto; flex-shrink: 0;
-      box-shadow: 0 0 8px #22c55e88;
-      animation: pulse-dot 2s infinite;
-    }
-    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.45} }
-
-    .pipeline {
-      display: flex; align-items: center; gap: 0;
-      margin-bottom: 20px;
-      background: #0e1320; border: 1px solid #1e2538;
-      border-radius: 10px; padding: 14px 10px; overflow-x: auto;
-    }
-    .pipe-step {
-      display: flex; flex-direction: column; align-items: center;
-      flex: 1; min-width: 72px; gap: 6px;
-    }
-    .pipe-icon {
-      width: 42px; height: 42px; border-radius: 9px;
-      background: #141926; border: 1.5px solid #2a3048;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; transition: all 0.35s;
-    }
-    .pipe-step.active .pipe-icon { border-color: #10b981; background: #0d2018; box-shadow: 0 0 12px #10b98155; }
-    .pipe-step.done .pipe-icon   { border-color: #22c55e; background: #0e1f14; }
-    .pipe-step.rejected .pipe-icon { border-color: #ef4444; background: #1f0e0e; }
-    .pipe-label { font-size: 9px; color: #4a5470; text-align: center; letter-spacing: 0.05em; text-transform: uppercase; transition: color 0.3s; }
-    .pipe-step.active .pipe-label { color: #10b981; }
-    .pipe-step.done .pipe-label   { color: #22c55e; }
-    .pipe-step.rejected .pipe-label { color: #ef4444; }
-    .pipe-arrow { color: #2a3048; font-size: 14px; flex-shrink: 0; margin: 0 2px; transition: color 0.3s; }
-    .pipe-arrow.lit      { color: #10b981; }
-    .pipe-arrow.done     { color: #22c55e; }
-    .pipe-arrow.rejected { color: #ef4444; }
-
-    .status-banner {
-      padding: 11px 16px; border-radius: 9px; font-size: 12px;
-      margin-bottom: 16px; display: none; align-items: center; gap: 8px;
-    }
-    .status-banner.show { display: flex; }
-    .status-banner.pass { background: #0e1f14; border: 1px solid #22c55e44; color: #22c55e; }
-    .status-banner.fail { background: #1f0e0e; border: 1px solid #ef444444; color: #ef4444; }
-    .status-banner.info { background: #0d2018; border: 1px solid #10b98144; color: #10b981; }
-
-    .sign-steps { margin-bottom: 16px; display: none; }
-    .sign-steps.show { display: block; }
-    .sign-step {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 14px; border-radius: 7px; margin-bottom: 5px;
-      font-size: 11px; background: #0e1320; border: 1px solid #1e2538;
-      color: #4a5470; transition: all 0.3s;
-    }
-    .sign-step.active { color: #e8edf8; border-color: #10b98144; background: #0d2018; }
-    .sign-step.done   { color: #22c55e; border-color: #22c55e33; background: #0e1f14; }
-    .sign-step.warn   { color: #f59e0b; border-color: #f59e0b33; background: #1a1408; }
-    .sign-dot { width: 8px; height: 8px; border-radius: 50%; background: #2a3048; flex-shrink: 0; transition: background 0.3s; }
-    .sign-step.active .sign-dot { background: #10b981; animation: pulse-dot 1s infinite; }
-    .sign-step.done .sign-dot   { background: #22c55e; }
-    .sign-step.warn .sign-dot   { background: #f59e0b; }
-
-    .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-    @media (max-width: 600px) { .main-grid { grid-template-columns: 1fr; } }
-
-    .panel { background: #0e1320; border: 1px solid #1e2538; border-radius: 10px; overflow: hidden; }
-    .panel-header {
-      padding: 10px 16px; border-bottom: 1px solid #1e2538;
-      display: flex; align-items: center; gap: 8px;
-      font-size: 10px; font-weight: 600; color: #6878a0;
+    .kill-info { flex: 1; }
+    .kill-title { font-size: 12px; font-weight: 700; color: var(--red); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 4px; }
+    .kill-desc { font-size: 10px; color: var(--text2); line-height: 1.6; }
+    .kill-btn {
+      background: var(--red); border: none; border-radius: 10px;
+      color: #fff; padding: 12px 24px; font-family: var(--mono);
+      font-size: 12px; font-weight: 700; cursor: pointer;
       letter-spacing: 0.08em; text-transform: uppercase;
+      transition: all 0.2s; flex-shrink: 0;
+      box-shadow: 0 0 20px #ff456033;
     }
+    .kill-btn:hover:not(:disabled) { background: #ff1a3a; box-shadow: 0 0 30px #ff456066; transform: translateY(-1px); }
+    .kill-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+    .kill-btn.executed { background: #3d0a10; color: var(--red); border: 1px solid var(--red-mid); box-shadow: none; }
+
+    /* Kill overlay */
+    .kill-overlay {
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: rgba(3,2,5,0.95); align-items: center; justify-content: center;
+      flex-direction: column; gap: 20px;
+    }
+    .kill-overlay.show { display: flex; }
+    .kill-overlay-icon { font-size: 64px; animation: kill-pulse 0.5s ease-in-out 3; }
+    @keyframes kill-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+    .kill-overlay-title { font-family: var(--sans); font-size: 32px; font-weight: 800; color: var(--red); letter-spacing: -0.02em; }
+    .kill-overlay-msg { font-size: 12px; color: var(--text2); text-align: center; max-width: 400px; line-height: 1.8; }
+    .kill-overlay-hash { font-size: 10px; color: var(--text3); margin-top: 8px; }
+
+    /* Live prices */
+    .prices-bar { display: flex; gap: 8px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; margin-bottom: 18px; align-items: center; }
+    .price-item { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+    .price-sym { color: var(--text2); }
+    .price-val { color: var(--text); font-weight: 700; }
+    .price-chg { font-size: 10px; }
+    .price-chg.up { color: var(--green); }
+    .price-chg.dn { color: var(--red); }
+    .price-div { width: 1px; height: 16px; background: var(--border2); }
+
+    /* Pipeline */
+    .pipeline { display: flex; align-items: center; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 18px; margin-bottom: 18px; overflow-x: auto; }
+    .pipe-step { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 70px; gap: 6px; }
+    .pipe-icon { width: 42px; height: 42px; border-radius: 10px; background: var(--surface2); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 17px; transition: all 0.4s; }
+    .pipe-step.active .pipe-icon { border-color: var(--green); background: var(--green-dim); box-shadow: 0 0 16px var(--green-dim); }
+    .pipe-step.done .pipe-icon   { border-color: var(--green); background: #001a10; }
+    .pipe-step.rejected .pipe-icon { border-color: var(--red); background: var(--red-dim); }
+    .pipe-step.killed .pipe-icon { border-color: var(--red); background: #1a0005; animation: flicker 0.3s ease-in-out 3; }
+    @keyframes flicker { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .pipe-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; text-align: center; transition: color 0.3s; }
+    .pipe-step.active .pipe-label { color: var(--green); }
+    .pipe-step.done .pipe-label   { color: var(--green); }
+    .pipe-step.rejected .pipe-label { color: var(--red); }
+    .pipe-step.killed .pipe-label { color: var(--red); }
+    .pipe-arrow { color: var(--border2); font-size: 11px; flex-shrink: 0; transition: color 0.3s; }
+    .pipe-arrow.lit { color: var(--green); }
+    .pipe-arrow.rejected { color: var(--red); }
+
+    /* Banner */
+    .banner { padding: 11px 16px; border-radius: 10px; font-size: 12px; margin-bottom: 14px; display: none; align-items: center; gap: 10px; }
+    .banner.show { display: flex; }
+    .banner.pass { background: #001a10; border: 1px solid #00e5a044; color: var(--green); }
+    .banner.fail { background: #1a0008; border: 1px solid #ff456044; color: var(--red); }
+    .banner.info { background: var(--green-dim); border: 1px solid var(--green-mid); color: var(--green); }
+    .banner.kill { background: #1a0005; border: 1px solid var(--red); color: var(--red); animation: pulse-red 1s infinite; }
+    @keyframes pulse-red { 0%,100%{border-color:var(--red)} 50%{border-color:#ff000044} }
+
+    /* Sign steps */
+    .sign-steps { margin-bottom: 14px; display: none; }
+    .sign-steps.show { display: block; }
+    .sign-step { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 8px; margin-bottom: 4px; font-size: 11px; background: var(--surface); border: 1px solid var(--border); color: var(--text3); transition: all 0.3s; }
+    .sign-step.active { color: var(--text); border-color: var(--green-mid); background: var(--green-dim); }
+    .sign-step.done   { color: var(--green); border-color: #00e5a033; background: #001a1044; }
+    .sign-step.warn   { color: var(--amber); border-color: var(--amber-dim); background: var(--amber-dim); }
+    .sign-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border2); flex-shrink: 0; transition: all 0.3s; }
+    .sign-step.active .sign-dot { background: var(--green); animation: pulse 1s infinite; }
+    .sign-step.done .sign-dot   { background: var(--green); }
+    .sign-step.warn .sign-dot   { background: var(--amber); }
+
+    /* Main grid */
+    .main { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 14px; margin-bottom: 14px; }
+    @media(max-width:700px){ .main { grid-template-columns: 1fr; } }
+
+    /* Panel */
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .panel-head { padding: 11px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--text2); letter-spacing: 0.1em; text-transform: uppercase; }
     .panel-body { padding: 16px; }
 
-    .tx-field { margin-bottom: 11px; }
-    .tx-label { font-size: 10px; color: #5a6480; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.06em; display: block; }
-    .tx-input {
-      width: 100%; background: #141926; border: 1px solid #2a3048;
-      border-radius: 7px; color: #c8d0e0; padding: 8px 11px;
-      font-family: 'Courier New', monospace; font-size: 13px; outline: none;
-      transition: border-color 0.2s; appearance: none;
-    }
-    .tx-input:focus { border-color: #10b981; }
-    select.tx-input option { background: #141926; }
+    /* Quick cmds */
+    .quick-cmds { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 9px; }
+    .quick-cmd { background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; color: var(--text2); padding: 4px 9px; font-family: var(--mono); font-size: 10px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .quick-cmd:hover { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+    .quick-cmd.danger:hover { border-color: var(--red); color: var(--red); background: var(--red-dim); }
 
+    /* Chat */
+    .chat-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; height: 190px; overflow-y: auto; padding: 12px; margin-bottom: 10px; font-size: 12px; line-height: 1.7; scroll-behavior: smooth; }
+    .chat-msg { margin-bottom: 10px; display: flex; flex-direction: column; gap: 3px; }
+    .chat-role { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .chat-msg.user .chat-role  { color: var(--blue); }
+    .chat-msg.agent .chat-role { color: var(--green); }
+    .chat-msg.sys .chat-role   { color: var(--text3); }
+    .chat-msg.kill-msg .chat-role { color: var(--red); }
+    .chat-msg.user .chat-text  { color: var(--text); }
+    .chat-msg.agent .chat-text { color: var(--green); }
+    .chat-msg.sys .chat-text   { color: var(--text2); font-style: italic; }
+    .chat-msg.kill-msg .chat-text { color: var(--red); }
+    .chat-input-row { display: flex; gap: 8px; }
+    .chat-input { flex: 1; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); padding: 9px 13px; font-family: var(--mono); font-size: 12px; outline: none; transition: border-color 0.2s; }
+    .chat-input:focus { border-color: var(--green); }
+    .chat-input::placeholder { color: var(--text3); }
+    .chat-input:disabled { opacity: 0.4; }
+    .send-btn { background: var(--green); border: none; border-radius: 8px; color: #000; padding: 9px 15px; font-family: var(--mono); font-size: 12px; font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.1s; white-space: nowrap; }
+    .send-btn:hover:not(:disabled) { opacity: 0.85; transform: translateY(-1px); }
+    .send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* Tabs */
+    .tabs { display: flex; border-bottom: 1px solid var(--border); }
+    .tab { flex: 1; padding: 10px; font-size: 10px; text-align: center; color: var(--text3); cursor: pointer; letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.2s; border-bottom: 2px solid transparent; }
+    .tab.active { color: var(--green); border-bottom-color: var(--green); }
+    .tab-content { display: none; padding: 14px; }
+    .tab-content.show { display: block; }
+
+    /* Policy */
     .policy-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 11px; }
-    .policy-key { color: #6878a0; }
-    .policy-val {
-      background: #141926; border: 1px solid #2a3048; border-radius: 6px;
-      color: #c8d0e0; padding: 5px 9px; font-family: 'Courier New', monospace;
-      font-size: 12px; outline: none; width: 100px; text-align: right;
-    }
-    .toggle-row { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #6878a0; }
-    .toggle { width: 34px; height: 19px; background: #2a3048; border-radius: 10px; cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; }
-    .toggle.on { background: #10b981; }
+    .policy-key { color: var(--text2); }
+    .policy-val { background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; color: var(--text); padding: 5px 9px; font-family: var(--mono); font-size: 12px; outline: none; width: 100px; text-align: right; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text2); margin-bottom: 10px; }
+    .toggle { width: 34px; height: 19px; background: var(--border2); border-radius: 10px; cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; }
+    .toggle.on { background: var(--green); }
     .toggle::after { content:''; position: absolute; width: 13px; height: 13px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s; }
     .toggle.on::after { transform: translateX(15px); }
+    .guardian-tag { display: inline-flex; align-items: center; gap: 5px; background: var(--green-dim); border: 1px solid var(--green-mid); border-radius: 20px; padding: 4px 12px; font-size: 9px; color: var(--green); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 8px; }
 
-    .vault-box { background: #0a0d12; border: 1px solid #2a3048; border-radius: 8px; padding: 11px 13px; margin-bottom: 10px; font-size: 11px; }
-    .vault-path { color: #10b981; margin-bottom: 7px; font-size: 12px; }
-    .vault-row { display: flex; justify-content: space-between; color: #5a6480; margin-bottom: 4px; }
-    .vault-val { color: #c8d0e0; }
-    .vault-key-visual { background: #141926; border: 1px dashed #2a3048; border-radius: 7px; padding: 10px; text-align: center; font-size: 10px; color: #3a4460; line-height: 1.7; }
-    .vault-status { margin-top: 11px; display: flex; align-items: center; gap: 8px; font-size: 11px; }
-    .guardian-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: #0d2018; border: 1px solid #10b98144;
-      border-radius: 20px; padding: 5px 12px;
-      font-size: 10px; color: #10b981; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 10px;
-    }
+    /* Vault */
+    .vault-box { background: var(--bg); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-size: 11px; }
+    .vault-path { color: var(--green); margin-bottom: 7px; font-size: 11px; }
+    .vault-row { display: flex; justify-content: space-between; color: var(--text2); margin-bottom: 3px; }
+    .vault-val { color: var(--text); }
+    .vault-key { background: var(--surface2); border: 1px dashed var(--border2); border-radius: 8px; padding: 10px; text-align: center; font-size: 10px; color: var(--text3); line-height: 1.8; transition: all 0.4s; }
+    .vault-status { margin-top: 9px; display: flex; align-items: center; gap: 8px; font-size: 11px; }
 
-    .run-btn {
-      width: 100%; padding: 13px;
-      background: linear-gradient(135deg, #10b981, #3B5BDB);
-      border: none; border-radius: 9px; color: #fff;
-      font-family: 'Courier New', monospace; font-size: 14px; font-weight: 700;
-      cursor: pointer; letter-spacing: 0.05em;
-      transition: opacity 0.2s, transform 0.1s; margin-top: 4px;
-    }
-    .run-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
-    .run-btn:active:not(:disabled) { transform: translateY(0); }
-    .run-btn:disabled { opacity: 0.38; cursor: not-allowed; transform: none; }
+    /* Forensic stream */
+    .forensic-stream { max-height: 220px; overflow-y: auto; }
+    .forensic-item { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 10px; }
+    .forensic-item:last-child { border-bottom: none; }
+    .forensic-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
+    .forensic-dot.ok  { background: var(--green); }
+    .forensic-dot.rej { background: var(--red); }
+    .forensic-dot.kill-dot { background: var(--red); animation: pulse 0.5s infinite; }
+    .forensic-left { flex: 1; }
+    .forensic-action { color: var(--text); margin-bottom: 2px; }
+    .forensic-meta { color: var(--text3); }
+    .forensic-badge { font-size: 9px; padding: 2px 7px; border-radius: 4px; flex-shrink: 0; letter-spacing: 0.06em; }
+    .forensic-badge.ok  { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-mid); }
+    .forensic-badge.rej { background: var(--red-dim); color: var(--red); border: 1px solid var(--red-mid); }
+    .forensic-badge.kill-badge { background: #3d0010; color: var(--red); border: 1px solid var(--red); }
+    .forensic-empty { color: var(--text3); font-size: 11px; text-align: center; padding: 20px 0; }
 
-    .logs-panel { background: #0e1320; border: 1px solid #1e2538; border-radius: 10px; overflow: hidden; }
-    .log-body { padding: 13px 16px; font-size: 11px; font-family: 'Courier New', monospace; max-height: 200px; overflow-y: auto; line-height: 1.8; }
+    /* TX result */
+    .tx-result { background: var(--bg); border: 1px solid var(--green-mid); border-radius: 8px; padding: 10px 12px; font-size: 11px; margin-top: 10px; display: none; }
+    .tx-result.show { display: block; }
+    .tx-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+    .tx-key { color: var(--text2); }
+    .tx-val { color: var(--green); word-break: break-all; max-width: 170px; text-align: right; }
+
+    /* Logs */
+    .logs { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .log-body { padding: 12px 16px; font-size: 11px; max-height: 160px; overflow-y: auto; line-height: 1.9; scroll-behavior: smooth; }
     .log-line { display: flex; gap: 10px; }
-    .log-ts  { color: #3a4460; flex-shrink: 0; }
-    .log-msg { color: #7888a8; }
-    .log-msg.highlight { color: #c8d0e0; }
-    .log-msg.green  { color: #22c55e; }
-    .log-msg.red    { color: #ef4444; }
-    .log-msg.amber  { color: #f59e0b; }
-    .log-msg.blue   { color: #10b981; }
+    .log-ts  { color: var(--text3); flex-shrink: 0; }
+    .log-msg { color: var(--text2); }
+    .log-msg.hi    { color: var(--text); }
+    .log-msg.green { color: var(--green); }
+    .log-msg.red   { color: var(--red); }
+    .log-msg.amber { color: var(--amber); }
+    .log-msg.blue  { color: var(--blue); }
     .log-cursor { animation: blink 1s step-end infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-    .vault-guarantee { margin-top: 12px; background: #0a0d12; border: 1px solid #1e2538; border-radius: 8px; padding: 10px 13px; font-size: 10px; color: #3a4460; line-height: 1.7; }
-    .vault-guarantee-title { color: #5a6480; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.06em; font-size: 9px; }
   </style>
 </head>
 <body>
-<div class="root">
 
+<!-- Kill Switch Overlay -->
+<div class="kill-overlay" id="kill-overlay">
+  <div class="kill-overlay-icon">☠️</div>
+  <div class="kill-overlay-title">KILL SWITCH EXECUTED</div>
+  <div class="kill-overlay-msg">
+    Agent token revoked.<br/>
+    Decryption capability permanently destroyed.<br/>
+    Key material wiped from memory.<br/>
+    Vault re-locked. Agent is dead.
+  </div>
+  <div class="kill-overlay-hash" id="kill-hash"></div>
+  <button onclick="closeKillOverlay()" style="margin-top:20px;background:var(--red);border:none;border-radius:8px;color:#fff;padding:10px 24px;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.08em">ACKNOWLEDGE</button>
+</div>
+
+<div class="wrap">
+
+  <!-- Header -->
   <div class="header">
-    <div class="logo">🛡️</div>
-    <div class="header-text">
-      <h1>Guardian Agent</h1>
-      <p>AI-powered transactions — zero private key exposure</p>
+    <div class="logo">
+      <div class="logo-icon">🛡️</div>
+      <div class="logo-text">Guardian<span>Agent</span></div>
     </div>
-    <div class="status-dot"></div>
+    <div class="header-badges">
+      <div class="badge"><div class="badge-dot"></div>Zero-trust · OWS</div>
+    </div>
   </div>
 
+  <!-- Trust Score -->
+  <div class="trust-bar">
+    <div class="trust-label">Agent Trust Score</div>
+    <div class="trust-track">
+      <div class="trust-fill" id="trust-fill" style="width:100%;background:var(--green)"></div>
+    </div>
+    <div class="trust-score" id="trust-score" style="color:var(--green)">100</div>
+    <div class="trust-status" id="trust-status" style="color:var(--green)">TRUSTED</div>
+    <div class="trust-stats">
+      <div class="trust-stat"><div class="trust-stat-val" id="stat-approved" style="color:var(--green)">0</div><div class="trust-stat-key">Approved</div></div>
+      <div class="trust-stat"><div class="trust-stat-val" id="stat-blocked" style="color:var(--red)">0</div><div class="trust-stat-key">Blocked</div></div>
+      <div class="trust-stat"><div class="trust-stat-val" id="stat-total" style="color:var(--text2)">0</div><div class="trust-stat-key">Total</div></div>
+    </div>
+  </div>
+
+  <!-- Kill Switch -->
+  <div class="kill-section">
+    <div class="kill-info">
+      <div class="kill-title">⚠ Emergency Kill Switch</div>
+      <div class="kill-desc">Immediately revokes agent token and destroys decryption capability. Executes <code>ows key revoke</code> — irreversible. Agent cannot sign any future transaction.</div>
+    </div>
+    <button class="kill-btn" id="kill-btn" onclick="executeKillSwitch()">☠ EXECUTE KILL SWITCH</button>
+  </div>
+
+  <!-- Live Prices -->
+  <div class="prices-bar" id="prices-bar">
+    <div style="font-size:10px;color:var(--text3)">Loading live prices...</div>
+  </div>
+
+  <!-- Pipeline -->
   <div class="pipeline">
-    <div class="pipe-step" id="ps-agent"><div class="pipe-icon">🤖</div><div class="pipe-label">Guardian Agent</div></div>
+    <div class="pipe-step" id="ps-agent"><div class="pipe-icon">🤖</div><div class="pipe-label">AI Agent</div></div>
     <div class="pipe-arrow" id="pa-1">▶</div>
-    <div class="pipe-step" id="ps-ows"><div class="pipe-icon">⚙️</div><div class="pipe-label">Interface</div></div>
+    <div class="pipe-step" id="ps-iface"><div class="pipe-icon">⚙️</div><div class="pipe-label">Interface</div></div>
     <div class="pipe-arrow" id="pa-2">▶</div>
     <div class="pipe-step" id="ps-policy"><div class="pipe-icon">🛡️</div><div class="pipe-label">Policy Eng.</div></div>
     <div class="pipe-arrow" id="pa-3">▶</div>
     <div class="pipe-step" id="ps-signer"><div class="pipe-icon">✍️</div><div class="pipe-label">Signer</div></div>
     <div class="pipe-arrow" id="pa-4">▶</div>
-    <div class="pipe-step" id="ps-vault"><div class="pipe-icon">🔒</div><div class="pipe-label">Wallet Vault</div></div>
+    <div class="pipe-step" id="ps-vault"><div class="pipe-icon">🔒</div><div class="pipe-label">Vault</div></div>
   </div>
 
-  <div class="status-banner" id="status-banner"></div>
+  <!-- Banner -->
+  <div class="banner" id="banner"></div>
 
+  <!-- Sign steps -->
   <div class="sign-steps" id="sign-steps">
     <div class="sign-step" id="ss-1"><div class="sign-dot"></div><span>Decrypting key from vault (AES-256-GCM)...</span></div>
     <div class="sign-step" id="ss-2"><div class="sign-dot"></div><span>Signing transaction with secp256k1...</span></div>
@@ -213,208 +330,484 @@
     <div class="sign-step" id="ss-4"><div class="sign-dot"></div><span>Broadcasting signed transaction to network...</span></div>
   </div>
 
-  <div class="main-grid">
+  <!-- Main grid -->
+  <div class="main">
     <div>
-      <div class="panel" style="margin-bottom:16px">
-        <div class="panel-header">💸 Transaction Request</div>
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-head">🤖 AI Agent — Natural Language</div>
         <div class="panel-body">
-          <div class="tx-field">
-            <label class="tx-label">Token</label>
-            <select class="tx-input" id="tx-token">
-              <option value="ETH">ETH</option>
-              <option value="USDC">USDC</option>
-              <option value="BTC">BTC</option>
-            </select>
+          <div class="quick-cmds">
+            <div class="quick-cmd" onclick="setCmd('Send $100 of ETH to 0xDEAD...BEEF')">$100 ETH ✅</div>
+            <div class="quick-cmd" onclick="setCmd('Send $500 of ETH to 0xDEAD...BEEF')">$500 ETH ❌</div>
+            <div class="quick-cmd" onclick="setCmd('Transfer $80 USDC to 0xABCD...1234')">$80 USDC ❌</div>
+            <div class="quick-cmd" onclick="setCmd('Send $50 of ETH to 0x1234...5678')">$50 ETH ✅</div>
+            <div class="quick-cmd" onclick="setCmd('What is my wallet address?')">Wallet info</div>
           </div>
-          <div class="tx-field">
-            <label class="tx-label">Amount (USD)</label>
-            <input class="tx-input" type="number" id="tx-amount" value="150" min="1" max="99999" />
+          <div class="chat-box" id="chat-box">
+            <div class="chat-msg sys">
+              <div class="chat-role">system</div>
+              <div class="chat-text">Guardian Agent online. Policy engine active. Kill switch armed.</div>
+            </div>
           </div>
-          <div class="tx-field">
-            <label class="tx-label">Recipient</label>
-            <input class="tx-input" type="text" id="tx-to" value="0xDEAD...BEEF" />
+          <div class="chat-input-row">
+            <input class="chat-input" id="chat-input" placeholder="Send $100 of ETH to 0xDEAD...BEEF" onkeydown="if(event.key==='Enter')sendMsg()" />
+            <button class="send-btn" id="send-btn" onclick="sendMsg()">SEND</button>
           </div>
-          <button class="run-btn" id="run-btn" onclick="runAgent()">▶ Run Guardian Agent</button>
         </div>
       </div>
 
       <div class="panel">
-        <div class="panel-header">🛡️ Policy Engine Config</div>
+        <div class="panel-head">🛡️ Policy Engine</div>
         <div class="panel-body">
           <div class="policy-row">
             <span class="policy-key">Max spend (USD)</span>
             <input class="policy-val" type="number" id="policy-max" value="200" />
           </div>
-          <div class="policy-row">
-            <span class="policy-key">Allowed token</span>
-            <input class="policy-val" type="text" id="policy-token" value="ETH" readonly style="cursor:default;color:#10b981;border-color:#10b98144" />
+          <div class="toggle-row">
+            <span>ETH only</span>
+            <div class="toggle on" id="eth-only" onclick="this.classList.toggle('on')"></div>
           </div>
           <div class="toggle-row">
             <span>Simulation required</span>
             <div class="toggle on" id="sim-toggle" onclick="this.classList.toggle('on')"></div>
           </div>
-          <div><div class="guardian-badge">⚡ Guardian enforced</div></div>
+          <div><div class="guardian-tag">⚡ Guardian enforced</div></div>
         </div>
       </div>
     </div>
 
     <div>
       <div class="panel" style="height:100%">
-        <div class="panel-header">🔒 Wallet Vault</div>
-        <div class="panel-body">
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab('vault',this)">🔒 Vault</div>
+          <div class="tab" onclick="switchTab('forensic',this)">🔍 Forensic</div>
+          <div class="tab" onclick="switchTab('history',this)">📜 History</div>
+        </div>
+
+        <!-- Vault tab -->
+        <div class="tab-content show" id="tab-vault">
           <div class="vault-box">
             <div class="vault-path">~/.guardian/wallets/default.vault</div>
             <div class="vault-row"><span>Encryption</span><span class="vault-val">AES-256-GCM</span></div>
             <div class="vault-row"><span>KDF</span><span class="vault-val">Argon2id</span></div>
             <div class="vault-row"><span>Curve</span><span class="vault-val">secp256k1</span></div>
-            <div class="vault-row"><span>Agent access</span><span style="color:#ef4444;font-weight:700">DENIED</span></div>
+            <div class="vault-row"><span>Agent access</span><span style="color:var(--red);font-weight:700" id="vault-access">DENIED</span></div>
+            <div class="vault-row"><span>Token</span><span class="vault-val" id="vault-token">ows_key_7f3a...c2e1</span></div>
           </div>
-          <div class="vault-key-visual" id="vault-visual">
+          <div class="vault-key" id="vault-key">
             ████████████████████████<br/>
             ████ ENCRYPTED KEY ██████<br/>
             ████████████████████████<br/>
-            <span style="font-size:9px;color:#2a3448;letter-spacing:0.05em">← agent cannot read this →</span>
+            <span style="font-size:9px;color:#1c2235">← agent cannot read this →</span>
           </div>
           <div class="vault-status" id="vault-status">
-            <span style="font-size:16px">🔒</span>
-            <span style="color:#22c55e">Vault locked — key never exposed</span>
+            <span style="font-size:15px">🔒</span>
+            <span style="color:var(--green)">Vault locked — key never exposed</span>
           </div>
-          <div class="vault-guarantee">
-            <div class="vault-guarantee-title">Guardian Guarantee</div>
-            Private key decrypted only during sign() → immediately wiped.<br/>
-            Agent receives tx hash only. Key never leaves vault scope.
+          <div class="tx-result" id="tx-result">
+            <div class="tx-row"><span class="tx-key">Status</span><span class="tx-val" id="tr-status"></span></div>
+            <div class="tx-row"><span class="tx-key">TX Hash</span><span class="tx-val" id="tr-hash"></span></div>
+            <div class="tx-row"><span class="tx-key">Amount</span><span class="tx-val" id="tr-amount"></span></div>
+            <div class="tx-row"><span class="tx-key">Token</span><span class="tx-val" id="tr-token"></span></div>
+          </div>
+        </div>
+
+        <!-- Forensic tab -->
+        <div class="tab-content" id="tab-forensic">
+          <div class="forensic-stream" id="forensic-stream">
+            <div class="forensic-empty">No signature requests yet.</div>
+          </div>
+        </div>
+
+        <!-- History tab -->
+        <div class="tab-content" id="tab-history">
+          <div class="forensic-stream" id="tx-history">
+            <div class="forensic-empty">No transactions yet.</div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="logs-panel">
-    <div class="panel-header">
+  <!-- Logs -->
+  <div class="logs">
+    <div class="panel-head">
       📋 Guardian Event Log
-      <span style="margin-left:auto;font-size:9px;color:#3a4460;letter-spacing:0.05em">LIVE STREAM</span>
+      <span style="margin-left:auto;font-size:9px;color:var(--text3)">LIVE</span>
     </div>
     <div class="log-body" id="log-body">
-      <div class="log-line"><span class="log-ts">[boot]</span><span class="log-msg">Guardian Agent initialized. Vault mounted. Policy engine online.</span></div>
+      <div class="log-line"><span class="log-ts">[boot]</span><span class="log-msg">Guardian Agent initialized. Vault mounted. Policy engine online. Kill switch armed.</span></div>
       <div class="log-line"><span class="log-ts">[sys]</span><span class="log-msg">Waiting for agent request... <span class="log-cursor">█</span></span></div>
     </div>
   </div>
 
 </div>
+
 <script>
-  var running = false;
-  function ts() { var n=new Date(); return '['+pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds())+']'; }
-  function pad(x) { return String(x).padStart(2,'0'); }
-  function addLog(msg,cls,delay) {
-    return new Promise(function(res){ setTimeout(function(){
-      var lb=document.getElementById('log-body');
-      var div=document.createElement('div'); div.className='log-line';
-      div.innerHTML='<span class="log-ts">'+ts()+'</span><span class="log-msg '+(cls||'')+'">'+msg+'</span>';
-      lb.appendChild(div); lb.scrollTop=lb.scrollHeight; res();
-    }, delay||0); });
+  var busy = false;
+  var killed = false;
+  var trustScore = 100;
+  var approvedCount = 0;
+  var blockedCount = 0;
+  var totalCount = 0;
+
+  // ── Tab switching ──────────────────────────────────────────
+  function switchTab(name, el) {
+    document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelectorAll('.tab-content').forEach(function(t){ t.classList.remove('show'); });
+    el.classList.add('active');
+    document.getElementById('tab-'+name).classList.add('show');
   }
-  function sleep(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
-  function setPipeStep(id,state){ var el=document.getElementById('ps-'+id); if(el) el.className='pipe-step '+state; }
-  function setPipeArrow(id,state){ var el=document.getElementById('pa-'+id); if(el) el.className='pipe-arrow '+state; }
-  function resetPipeline(){ ['agent','ows','policy','signer','vault'].forEach(function(s){ setPipeStep(s,''); }); [1,2,3,4].forEach(function(i){ setPipeArrow(i,''); }); }
-  function setSignStep(id,state){ var el=document.getElementById('ss-'+id); if(el) el.className='sign-step '+state; }
-  function showBanner(msg,type){ var b=document.getElementById('status-banner'); b.className='status-banner show '+type; b.innerHTML=msg; }
-  function hideBanner(){ document.getElementById('status-banner').className='status-banner'; }
-  function resetSignSteps(){ [1,2,3,4].forEach(function(i){ setSignStep(i,''); }); document.getElementById('sign-steps').className='sign-steps'; }
-  function setVaultVisual(state){
-    var v=document.getElementById('vault-visual'), s=document.getElementById('vault-status');
-    if(state==='decrypting'){
-      v.innerHTML='<span style="color:#f59e0b">▓</span>▓▓▓<span style="color:#f59e0b">▓</span>▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓<br/>██ DECRYPTING... ████████<br/>▓▓▓▓▓<span style="color:#f59e0b">▓</span>▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓<br/><span style="font-size:9px;color:#f59e0b;letter-spacing:0.05em">← key briefly in memory →</span>';
-      s.innerHTML='<span style="font-size:16px">🔓</span> <span style="color:#f59e0b">Decrypting — signing only</span>';
-    } else if(state==='wiped'){
-      v.innerHTML='0x00000000000000000000000000<br/>0x00000000000000000000000000<br/>0x00000000000000000000000000<br/><span style="font-size:9px;color:#22c55e;letter-spacing:0.05em">← key wiped from memory ✓ →</span>';
-      s.innerHTML='<span style="font-size:16px">🔒</span> <span style="color:#22c55e">Key zeroized — vault locked</span>';
+
+  // ── Trust Score ────────────────────────────────────────────
+  function updateTrust(approved) {
+    totalCount++;
+    if (approved) {
+      approvedCount++;
+      trustScore = Math.min(100, trustScore + 5);
     } else {
-      v.innerHTML='████████████████████████<br/>████ ENCRYPTED KEY ██████<br/>████████████████████████<br/><span style="font-size:9px;color:#2a3448;letter-spacing:0.05em">← agent cannot read this →</span>';
-      s.innerHTML='<span style="font-size:16px">🔒</span> <span style="color:#22c55e">Vault locked — key never exposed</span>';
+      blockedCount++;
+      trustScore = Math.max(0, trustScore - 20);
+    }
+
+    document.getElementById('stat-approved').textContent = approvedCount;
+    document.getElementById('stat-blocked').textContent = blockedCount;
+    document.getElementById('stat-total').textContent = totalCount;
+
+    var fill = document.getElementById('trust-fill');
+    var score = document.getElementById('trust-score');
+    var status = document.getElementById('trust-status');
+
+    fill.style.width = trustScore + '%';
+    score.textContent = trustScore;
+
+    if (trustScore >= 70) {
+      fill.style.background = 'var(--green)';
+      score.style.color = 'var(--green)';
+      status.style.color = 'var(--green)';
+      status.textContent = 'TRUSTED';
+    } else if (trustScore >= 40) {
+      fill.style.background = 'var(--amber)';
+      score.style.color = 'var(--amber)';
+      status.style.color = 'var(--amber)';
+      status.textContent = 'SUSPICIOUS';
+    } else {
+      fill.style.background = 'var(--red)';
+      score.style.color = 'var(--red)';
+      status.style.color = 'var(--red)';
+      status.textContent = 'UNTRUSTED';
     }
   }
-  function randHex(bytes){ var o='0x'; for(var i=0;i<bytes;i++) o+=Math.floor(Math.random()*256).toString(16).padStart(2,'0'); return o; }
 
-  async function runAgent(){
-    if(running) return;
-    running=true;
-    document.getElementById('run-btn').disabled=true;
-    var token=document.getElementById('tx-token').value;
-    var amount=parseFloat(document.getElementById('tx-amount').value)||0;
-    var to=document.getElementById('tx-to').value||'0x???';
-    var maxSpend=parseFloat(document.getElementById('policy-max').value)||200;
-    var allowedT=(document.getElementById('policy-token').value||'ETH').toUpperCase().trim();
-    var simReq=document.getElementById('sim-toggle').classList.contains('on');
-    resetPipeline(); resetSignSteps(); hideBanner(); setVaultVisual('locked');
+  // ── Kill Switch ────────────────────────────────────────────
+  async function executeKillSwitch() {
+    if (killed) return;
+    killed = true;
 
-    setPipeStep('agent','active');
-    showBanner('🤖 Guardian Agent requesting sign operation...','info');
-    await addLog('Guardian Agent → Interface: sign_request { token: '+token+', amount: $'+amount.toFixed(2)+', to: '+to+' }','highlight');
-    await sleep(800);
+    var btn = document.getElementById('kill-btn');
+    btn.disabled = true;
+    btn.textContent = 'EXECUTING...';
 
-    setPipeStep('agent','done'); setPipeArrow(1,'lit'); setPipeStep('ows','active');
-    await addLog('Interface received request. Validating schema...','blue');
-    await sleep(600);
-    await addLog('Schema valid. Forwarding to policy engine.','blue');
+    addLog('☠ KILL SWITCH INITIATED — revoking agent token...', 'red');
     await sleep(400);
+    addLog('ows key revoke ows_key_7f3a...c2e1', 'red');
+    await sleep(600);
+    addLog('Token revoked. Decryption capability destroyed.', 'red');
+    await sleep(400);
+    addLog('Key material wiped from memory. Vault re-locked.', 'red');
+    await sleep(300);
+    addLog('Agent is terminated. No future signatures possible.', 'red');
 
-    setPipeStep('ows','done'); setPipeArrow(2,'lit'); setPipeStep('policy','active');
+    // Update UI
+    document.getElementById('vault-access').textContent = 'REVOKED ☠';
+    document.getElementById('vault-access').style.color = 'var(--red)';
+    document.getElementById('vault-token').textContent = 'REVOKED';
+    document.getElementById('vault-token').style.color = 'var(--red)';
+
+    setVault('killed');
+    showBanner('☠ KILL SWITCH EXECUTED — agent token permanently revoked', 'kill');
+
+    ['agent','iface','policy','signer','vault'].forEach(function(s){
+      setPipe(s, 'killed');
+    });
+
+    // Update trust score to 0
+    trustScore = 0;
+    document.getElementById('trust-fill').style.width = '0%';
+    document.getElementById('trust-fill').style.background = 'var(--red)';
+    document.getElementById('trust-score').textContent = '0';
+    document.getElementById('trust-score').style.color = 'var(--red)';
+    document.getElementById('trust-status').textContent = 'TERMINATED';
+    document.getElementById('trust-status').style.color = 'var(--red)';
+
+    addForensic('KILL_SWITCH', 'Agent token revoked — ows key revoke executed', false, true);
+    addChat('kill-msg', '☠ KILL SWITCH EXECUTED. My signing capability has been permanently revoked. I can no longer process any transactions.');
+
+    document.getElementById('chat-input').disabled = true;
+    document.getElementById('send-btn').disabled = true;
+    btn.textContent = '☠ TERMINATED';
+    btn.classList.add('executed');
+
+    // Show overlay after delay
+    await sleep(800);
+    var hash = randHex(32);
+    document.getElementById('kill-hash').textContent = 'Revocation TX: ' + hash.slice(0,40) + '...';
+    document.getElementById('kill-overlay').classList.add('show');
+  }
+
+  function closeKillOverlay() {
+    document.getElementById('kill-overlay').classList.remove('show');
+  }
+
+  // ── Forensic stream ────────────────────────────────────────
+  function addForensic(action, meta, success, isKill) {
+    var container = document.getElementById('forensic-stream');
+    if (container.querySelector('.forensic-empty')) container.innerHTML = '';
+    var d = document.createElement('div');
+    d.className = 'forensic-item';
+    var dotClass = isKill ? 'kill-dot' : (success ? 'ok' : 'rej');
+    var badgeClass = isKill ? 'kill-badge' : (success ? 'ok' : 'rej');
+    var badgeText = isKill ? 'KILL' : (success ? 'AUTHORIZED' : 'BLOCKED');
+    d.innerHTML =
+      '<div class="forensic-dot '+dotClass+'"></div>'+
+      '<div class="forensic-left">'+
+        '<div class="forensic-action">'+action+'</div>'+
+        '<div class="forensic-meta">'+meta+' · '+ts()+'</div>'+
+      '</div>'+
+      '<div class="forensic-badge '+badgeClass+'">'+badgeText+'</div>';
+    container.insertBefore(d, container.firstChild);
+  }
+
+  function addHistory(token, amount, success, reason, txHash) {
+    var container = document.getElementById('tx-history');
+    if (container.querySelector('.forensic-empty')) container.innerHTML = '';
+    var d = document.createElement('div');
+    d.className = 'forensic-item';
+    var dotClass = success ? 'ok' : 'rej';
+    var badgeClass = success ? 'ok' : 'rej';
+    d.innerHTML =
+      '<div class="forensic-dot '+dotClass+'"></div>'+
+      '<div class="forensic-left">'+
+        '<div class="forensic-action">'+amount.toFixed(2)+' '+token+'</div>'+
+        '<div class="forensic-meta">'+(txHash?txHash.slice(0,20)+'...':reason)+'</div>'+
+      '</div>'+
+      '<div class="forensic-badge '+badgeClass+'">'+(success?'CONFIRMED':'REJECTED')+'</div>';
+    container.insertBefore(d, container.firstChild);
+  }
+
+  // ── Prices ─────────────────────────────────────────────────
+  async function fetchPrices() {
+    try {
+      var r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,bitcoin,solana,usd-coin&vs_currencies=usd&include_24hr_change=true');
+      var d = await r.json();
+      var coins = [
+        {sym:'ETH',data:d.ethereum},{sym:'BTC',data:d.bitcoin},
+        {sym:'SOL',data:d.solana},{sym:'USDC',data:d['usd-coin']}
+      ];
+      document.getElementById('prices-bar').innerHTML = coins.map(function(c,i){
+        if(!c.data) return '';
+        var chg = c.data.usd_24h_change;
+        var chgStr = (chg>=0?'+':'')+chg.toFixed(2)+'%';
+        return (i>0?'<div class="price-div"></div>':'')+
+          '<div class="price-item"><span class="price-sym">'+c.sym+'</span>'+
+          '<span class="price-val">$'+c.data.usd.toLocaleString()+'</span>'+
+          '<span class="price-chg '+(chg>=0?'up':'dn')+'">'+chgStr+'</span></div>';
+      }).join('');
+    } catch(e) {
+      document.getElementById('prices-bar').innerHTML = '<div style="font-size:10px;color:var(--text3)">Price feed unavailable</div>';
+    }
+  }
+
+  // ── NLP Parser ─────────────────────────────────────────────
+  var TOKENS = ['ETH','BTC','SOL','USDC','USDT','MATIC','BNB','AVAX'];
+  function parseIntent(msg) {
+    var lower = msg.toLowerCase();
+    var isSend = /send|transfer|pay|move/i.test(msg);
+    if (!isSend) return { intent: lower.indexOf('address')!==-1||lower.indexOf('wallet')!==-1||lower.indexOf('balance')!==-1 ? 'info' : 'clarify' };
+    var amountMatch = msg.match(/\$\s*([\d,]+(?:\.\d+)?)/) || msg.match(/([\d,]+(?:\.\d+)?)/);
+    var amount = amountMatch ? parseFloat(amountMatch[1].replace(',','')) : null;
+    var token = null;
+    for(var i=0;i<TOKENS.length;i++) if(new RegExp('\\b'+TOKENS[i]+'\\b','i').test(msg)){token=TOKENS[i];break;}
+    if(!token) token='ETH';
+    var addrMatch = msg.match(/0x[a-fA-F0-9\.]{4,}/);
+    if(!amount) return { intent:'clarify' };
+    return { intent:'send', token:token, amount:amount, to:addrMatch?addrMatch[0]:'0xDEAD...BEEF' };
+  }
+
+  // ── Helpers ────────────────────────────────────────────────
+  function ts(){ var n=new Date(); return '['+pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds())+']'; }
+  function pad(x){ return String(x).padStart(2,'0'); }
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
+  function randHex(n){ var o='0x'; for(var i=0;i<n;i++) o+=Math.floor(Math.random()*256).toString(16).padStart(2,'0'); return o; }
+  function setCmd(t){ if(killed)return; document.getElementById('chat-input').value=t; document.getElementById('chat-input').focus(); }
+
+  function addLog(msg,cls){
+    var lb=document.getElementById('log-body');
+    var d=document.createElement('div'); d.className='log-line';
+    d.innerHTML='<span class="log-ts">'+ts()+'</span><span class="log-msg '+(cls||'')+'">'+msg+'</span>';
+    lb.appendChild(d); lb.scrollTop=lb.scrollHeight;
+  }
+
+  function addChat(role,text){
+    var cb=document.getElementById('chat-box');
+    var d=document.createElement('div'); d.className='chat-msg '+role;
+    var label=role==='user'?'YOU':role==='agent'?'GUARDIAN AGENT':role==='kill-msg'?'GUARDIAN AGENT':'SYSTEM';
+    d.innerHTML='<div class="chat-role">'+label+'</div><div class="chat-text">'+text+'</div>';
+    cb.appendChild(d); cb.scrollTop=cb.scrollHeight;
+  }
+
+  function setPipe(id,s){ var e=document.getElementById('ps-'+id); if(e) e.className='pipe-step '+(s||''); }
+  function setArrow(id,s){ var e=document.getElementById('pa-'+id); if(e) e.className='pipe-arrow '+(s||''); }
+  function resetPipe(){ ['agent','iface','policy','signer','vault'].forEach(function(s){setPipe(s,'');}); [1,2,3,4].forEach(function(i){setArrow(i,'');}); }
+  function setSign(id,s){ var e=document.getElementById('ss-'+id); if(e) e.className='sign-step '+(s||''); }
+  function showBanner(msg,t){ var b=document.getElementById('banner'); b.className='banner show '+t; b.innerHTML=msg; }
+  function hideBanner(){ document.getElementById('banner').className='banner'; }
+
+  function setVault(state){
+    var v=document.getElementById('vault-key'), s=document.getElementById('vault-status');
+    if(state==='decrypting'){
+      v.innerHTML='<span style="color:var(--amber)">▓</span>▓▓▓<span style="color:var(--amber)">▓</span>▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓<br/>██ DECRYPTING... ████████<br/>▓▓▓▓▓<span style="color:var(--amber)">▓</span>▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓<br/><span style="font-size:9px;color:var(--amber)">← key briefly in memory →</span>';
+      s.innerHTML='<span style="font-size:15px">🔓</span><span style="color:var(--amber)">Decrypting — signing only</span>';
+    } else if(state==='wiped'){
+      v.innerHTML='0x00000000000000000000000000<br/>0x00000000000000000000000000<br/>0x00000000000000000000000000<br/><span style="font-size:9px;color:var(--green)">← key wiped ✓ →</span>';
+      s.innerHTML='<span style="font-size:16px">🔒</span><span style="color:var(--green)">Key zeroized — vault locked</span>';
+    } else if(state==='killed'){
+      v.innerHTML='☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠<br/>TOKEN REVOKED — ACCESS DENIED<br/>☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠<br/><span style="font-size:9px;color:var(--red)">← agent permanently terminated →</span>';
+      s.innerHTML='<span style="font-size:16px">☠</span><span style="color:var(--red)">Kill switch executed — vault sealed</span>';
+    } else {
+      v.innerHTML='████████████████████████<br/>████ ENCRYPTED KEY ██████<br/>████████████████████████<br/><span style="font-size:9px;color:#1c2235">← agent cannot read this →</span>';
+      s.innerHTML='<span style="font-size:16px">🔒</span><span style="color:var(--green)">Vault locked — key never exposed</span>';
+    }
+  }
+
+  // ── Signing flow ───────────────────────────────────────────
+  async function runSigningFlow(token, amount) {
+    var maxSpend = parseFloat(document.getElementById('policy-max').value)||200;
+    var ethOnly  = document.getElementById('eth-only').classList.contains('on');
+    var simReq   = document.getElementById('sim-toggle').classList.contains('on');
+
+    setPipe('policy','active');
     showBanner('🛡️ Evaluating policies...','info');
-    await addLog('PolicyEngine → checking max_spend: $'+amount.toFixed(2)+' vs limit $'+maxSpend.toFixed(2),'');
-    await sleep(700);
+    addLog('PolicyEngine → max_spend: $'+amount.toFixed(2)+' vs $'+maxSpend.toFixed(2),'');
+    await sleep(600);
 
-    var rejected=false, rejectReason='';
-    if(amount>maxSpend){ rejected=true; rejectReason='Amount $'+amount.toFixed(2)+' exceeds limit $'+maxSpend.toFixed(2); }
-    else if(token.toUpperCase()!==allowedT){ rejected=true; rejectReason='Token '+token+' not in allowed list ['+allowedT+']'; }
+    var rejected=false, reason='';
+    if(amount>maxSpend){ rejected=true; reason='$'+amount.toFixed(2)+' exceeds limit $'+maxSpend.toFixed(2); }
+    else if(ethOnly && token.toUpperCase()!=='ETH'){ rejected=true; reason='Token '+token+' blocked — ETH only'; }
 
     if(rejected){
-      await addLog('PolicyEngine → REJECTED: '+rejectReason,'red');
-      setPipeStep('policy','rejected'); setPipeArrow(2,'rejected');
-      showBanner('❌ Rejected: '+rejectReason,'fail');
-      await addLog('Transaction blocked. Key never accessed. Vault remains locked.','amber');
-      await addLog('Guardian Agent received: { status: "rejected", reason: "'+rejectReason+'" }','');
-      document.getElementById('run-btn').disabled=false; running=false; return;
+      addLog('PolicyEngine → POLICY_DENIED: '+reason,'red');
+      setPipe('policy','rejected'); setArrow(2,'rejected');
+      showBanner('❌ Policy denied: '+reason,'fail');
+      addLog('Vault untouched. Key never accessed.','amber');
+      addForensic('sign_request('+token+', $'+amount.toFixed(2)+')', 'POLICY_DENIED: '+reason, false, false);
+      updateTrust(false);
+      addHistory(token, amount, false, reason, null);
+      return { success:false, reason };
     }
 
-    await addLog('PolicyEngine → max_spend: PASS ✓','green'); await sleep(300);
-    await addLog('PolicyEngine → token_allowlist: PASS ✓ ('+token+' allowed)','green'); await sleep(300);
-    if(simReq){ await addLog('PolicyEngine → simulation_required: running simulation...',''); await sleep(700); await addLog('PolicyEngine → simulation: PASS ✓ (no revert, gas estimated)','green'); }
+    addLog('PolicyEngine → PASS ✓ max_spend','green'); await sleep(300);
+    addLog('PolicyEngine → PASS ✓ token_allowlist','green'); await sleep(300);
+    if(simReq){ addLog('PolicyEngine → running simulation...',''); await sleep(700); addLog('PolicyEngine → PASS ✓ simulation','green'); }
 
-    setPipeStep('policy','done'); setPipeArrow(3,'done');
-    showBanner('✅ Policy evaluation passed — all checks cleared','pass');
-    await sleep(500);
-
-    setPipeStep('signer','active');
-    document.getElementById('sign-steps').className='sign-steps show';
-    await addLog('Signer → requesting key from vault for sign-only operation...','blue');
+    setPipe('policy','done'); setArrow(3,'done');
+    showBanner('✅ Policy passed — initiating signing','pass');
     await sleep(400);
 
-    setPipeStep('vault','active'); setVaultVisual('decrypting'); setSignStep(1,'active');
-    await sleep(950); setSignStep(1,'done');
-    await addLog('Vault → key decrypted into isolated memory region (no agent access)','amber');
-    await sleep(200);
+    setPipe('signer','active');
+    document.getElementById('sign-steps').className='sign-steps show';
+    addLog('Signer → requesting key (sign-only op)...','blue');
+    await sleep(400);
 
-    setSignStep(2,'active');
-    await addLog('Signer → signing tx with secp256k1...','blue');
-    await sleep(950); setSignStep(2,'done');
-    await addLog('Signer → signature: '+randHex(16)+'...','green');
-    await sleep(200);
+    setPipe('vault','active'); setVault('decrypting');
+    setSign(1,'active'); await sleep(950); setSign(1,'done');
+    addLog('Vault → key decrypted in isolated region','amber'); await sleep(200);
 
-    setSignStep(3,'active'); await sleep(750);
-    setSignStep(3,'warn'); setVaultVisual('wiped');
-    await addLog('Vault → KEY ZEROIZED from memory. Vault re-locked.','amber');
-    setPipeStep('vault','done'); await sleep(300);
+    setSign(2,'active'); addLog('Signer → signing with secp256k1...','blue');
+    await sleep(950); setSign(2,'done');
+    var sig = randHex(16);
+    addLog('Signer → sig: '+sig+'...','green'); await sleep(200);
 
-    setSignStep(4,'active'); await sleep(650);
-    setSignStep(4,'done'); setPipeStep('signer','done'); setPipeArrow(4,'done');
-    var txHash=randHex(32);
-    await addLog('Network → tx broadcast: '+txHash,'green'); await sleep(300);
-    await addLog('Guardian Agent received: { status: "confirmed", txHash: "'+txHash.slice(0,20)+'..." }','highlight');
-    await addLog('Private key was NEVER accessible to agent. Guardian enforced. ✓','green');
-    showBanner('✅ Transaction complete — private key never left the vault','pass');
-    document.getElementById('run-btn').disabled=false; running=false;
+    setSign(3,'active'); await sleep(750);
+    setSign(3,'warn'); setVault('wiped');
+    addLog('Vault → KEY ZEROIZED. Vault re-locked.','amber');
+    setPipe('vault','done'); await sleep(300);
+
+    setSign(4,'active'); await sleep(650);
+    setSign(4,'done'); setPipe('signer','done'); setArrow(4,'done');
+
+    var txHash = randHex(32);
+    addLog('Network → tx broadcast: '+txHash,'green');
+    addLog('Agent received tx hash only. Key never exposed. ✓','green');
+    showBanner('✅ Transaction complete — key never left the vault','pass');
+
+    addForensic('sign_request('+token+', $'+amount.toFixed(2)+')', 'Authorized · TX: '+txHash.slice(0,16)+'...', true, false);
+    updateTrust(true);
+    addHistory(token, amount, true, '', txHash);
+    return { success:true, txHash, amount, token };
   }
+
+  // ── Send message ───────────────────────────────────────────
+  async function sendMsg() {
+    if(busy || killed) return;
+    var input = document.getElementById('chat-input');
+    var msg = input.value.trim();
+    if(!msg) return;
+
+    busy=true;
+    document.getElementById('send-btn').disabled=true;
+    input.value='';
+
+    addChat('user', msg);
+    addLog('Agent → "'+msg+'"','hi');
+
+    resetPipe(); hideBanner(); setVault('locked');
+    document.getElementById('sign-steps').className='sign-steps';
+    document.getElementById('tx-result').className='tx-result';
+    [1,2,3,4].forEach(function(i){setSign(i,'');});
+
+    setPipe('agent','active');
+    showBanner('🤖 Agent parsing request...','info');
+    await sleep(400);
+
+    var parsed = parseIntent(msg);
+    addLog('Agent → intent: '+parsed.intent+(parsed.token?' | '+parsed.token:'')+(parsed.amount?' | $'+parsed.amount:''),'blue');
+    setPipe('agent','done'); setArrow(1,'lit');
+
+    if(parsed.intent==='send'){
+      addChat('agent', 'Routing $'+parsed.amount.toFixed(2)+' of '+parsed.token+' through Guardian policy engine...');
+      setPipe('iface','active');
+      addLog('Interface → token: '+parsed.token+', amount: $'+parsed.amount.toFixed(2),'');
+      await sleep(500);
+      setPipe('iface','done'); setArrow(2,'lit'); await sleep(300);
+
+      var result = await runSigningFlow(parsed.token, parsed.amount);
+
+      if(result.success){
+        document.getElementById('tr-status').textContent='CONFIRMED ✓';
+        document.getElementById('tr-hash').textContent=result.txHash.slice(0,22)+'...';
+        document.getElementById('tr-amount').textContent='$'+result.amount.toFixed(2);
+        document.getElementById('tr-token').textContent=result.token;
+        document.getElementById('tx-result').className='tx-result show';
+        addChat('agent','✅ Confirmed. TX: '+result.txHash.slice(0,18)+'... Key was never accessible to me.');
+      } else {
+        addChat('agent','❌ Blocked by Guardian policy: '+result.reason+'. Vault was never unlocked.');
+      }
+    } else if(parsed.intent==='info'){
+      setPipe('iface','done'); setArrow(1,'lit'); hideBanner();
+      addChat('agent','Your EVM address: 0x742d35Cc6634C0532925a3b8D4C9E4d3F7b2a1e0. Vault: AES-256-GCM. Token: ows_key_7f3a...c2e1.');
+    } else {
+      setPipe('iface','done'); setArrow(1,'lit'); hideBanner();
+      addChat('agent','Please clarify. Example: "Send $100 of ETH to 0x..."');
+    }
+
+    busy=false;
+    document.getElementById('send-btn').disabled=false;
+  }
+
+  // ── Init ───────────────────────────────────────────────────
+  fetchPrices();
+  setInterval(fetchPrices, 60000);
 </script>
 </body>
 </html>
